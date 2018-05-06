@@ -24,7 +24,7 @@ KEYS = {
     }
 
 
-class LCD_Keys:
+class Keys:
     def __init__(self, onDown, onRepeat=None, onUp=None):
         self.onDown = onDown
         self.onRepeat = onRepeat
@@ -48,13 +48,18 @@ class LCD_Keys:
 
     def start(self):
         while True:
-            for k, v in KEYS.items():
-                if GPIO.input(k) == 0:
-                    self.state[k][0] = True
-                    self.down(k)
-                else:
-                    self.state[k][0] = False
-            self.up()
+            self.poll()
+
+
+
+    def poll(self):
+        for k, v in KEYS.items():
+            if GPIO.input(k) == 0:
+                self.state[k][0] = True
+                self.down(k)
+            else:
+                self.state[k][0] = False
+        self.up()
 
 
 
@@ -86,6 +91,6 @@ if __name__ == '__main__':
     def up(key):
         print('Released: '+key)
 
-    keys = LCD_Keys(down, repeated, up)
+    keys = Keys(down, repeated, up)
     keys.start()
 

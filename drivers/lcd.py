@@ -218,13 +218,19 @@ class LCD:
 
 
     def turnOn(self):
+        self.isOn = True
         if (self.GPIO_Init() == 0):
             GPIO.output(BL_PIN,GPIO.HIGH)
 
 
     def turnOff(self):
+        self.isOn = False
         if (self.GPIO_Init() == 0):
             GPIO.output(BL_PIN,GPIO.LOW)
+
+    def isTurnedOn(self):
+        return self.isOn
+
 
     #/********************************************************************************
     #function:	
@@ -235,6 +241,7 @@ class LCD:
             return -1
 
         #Turn on the backlight
+        self.isOn = True
         GPIO.output(BL_PIN,GPIO.HIGH)
 
         #Hardware reset
@@ -254,7 +261,7 @@ class LCD:
         #Turn on the LCD display
         self.writeReg(0x29)
 
-        self.clear()
+        # self.clear()
 
     #/********************************************************************************
     #function:	Sets the start position and size of the display area
@@ -267,10 +274,10 @@ class LCD:
     def setWindows(self, Xstart, Ystart, Xend, Yend ):
         #set the X coordinates
         self.writeReg ( 0x2A )
-        self.writeData_8bit ( 0x00 )											#Set the horizontal starting point to the high octet
-        self.writeData_8bit ( (Xstart & 0xff) + self.x_adjust)			#Set the horizontal starting point to the low octet
-        self.writeData_8bit ( 0x00 )											#Set the horizontal end to the high octet
-        self.writeData_8bit ( (( Xend - 1 ) & 0xff) + self.x_adjust)		#Set the horizontal end to the low octet
+        self.writeData_8bit ( 0x00 )                                 #Set the horizontal starting point to the high octet
+        self.writeData_8bit ( (Xstart & 0xff) + self.x_adjust)       #Set the horizontal starting point to the low octet
+        self.writeData_8bit ( 0x00 )                                 #Set the horizontal end to the high octet
+        self.writeData_8bit ( (( Xend - 1 ) & 0xff) + self.x_adjust) #Set the horizontal end to the low octet
 
         #set the Y coordinates
         self.writeReg ( 0x2B )
@@ -279,7 +286,7 @@ class LCD:
         self.writeData_8bit ( 0x00 )
         self.writeData_8bit ( ( (Yend - 1) & 0xff )+ self.y_adjust)
 
-        self.writeReg(0x2C)	
+        self.writeReg(0x2C)
 
     #/********************************************************************************
     #function:	Set the display point (Xpoint, Ypoint)
@@ -329,19 +336,29 @@ class LCD:
     #			Clear screen 
     #********************************************************************************/
     def clear(self):
-        self.setArealColor(0,0, x_MAXPIXEL , y_MAXPIXEL  , Color = 0xFFFF)#white
+        self.setArealColor(0,0, x_MAXPIXEL , y_MAXPIXEL, Color = 0xFFFF)#white
 
-    def showImage(self,Image,Xstart,Ystart):
-        if (Image == None):
+    def showImage(self, image):
+        if (image == None):
             return
 
-        self.setWindows ( 0, 0, self.dis_column , self.dis_page  )
-        Pixels = Image.load()
+        self.setWindows(0, 0, self.dis_column , self.dis_page)
+        pixels = image.load()
         for j in range(0, self.dis_page ):
             for i in range(0, self.dis_column ):
-                Pixels_Color = ((Pixels[i, j][0] >> 3) << 11)|((Pixels[i, j][1] >> 2) << 5)|(Pixels[i, j][2] >> 3)#RGB Data
-                self.setColor(Pixels_Color , 1, 1)
+                pixels_Color = ((pixels[i, j][0] >> 3) << 11)|((pixels[i, j][1] >> 2) << 5)|(pixels[i, j][2] >> 3)#RGB Data
+                self.setColor(pixels_Color , 1, 1)
 
+
+
+    def drawRect(self, image, x, y, w, h):
+        self.setWindows(x,y,w,h)
+        pixels = image.load()
+        for j in range(0, h):
+            for i in range(0, w):
+                px = pixels[i, j]
+                pixels_color = ((px[0] >> 3) << 11)|((px[1] >> 2) << 5)|(px[2] >> 3)#RGB Data
+                self.setColor(pixels_color, 1, 1)
 
     def driver_delay_ms(self, xms):
         time.sleep(xms / 1000.0)
@@ -360,6 +377,9 @@ class LCD:
         SPI.mode = 0b00
         return 0;
 
+    def GPIO_Cleanup(self):
+        GPIO.cleanup()
+
 
 if __name__ == '__main__':
     import Image
@@ -369,21 +389,21 @@ if __name__ == '__main__':
 
     LCD = LCD()
 
-    print "**********Init LCD**********"
+    print("**********Init LCD**********")
     LCD.init(SCAN_DIR_DFT) #SCAN_DIR_DFT = D2U_L2R
 
     image = Image.new("RGB", (LCD.dis_column, LCD.dis_page), "WHITE")
     draw = ImageDraw.Draw(image)
     #font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 16)
-    print "***draw line"
+    print("***draw line")
     draw.line([(0,0),(127,0)], fill = "BLUE",width = 5)
     draw.line([(127,0),(127,127)], fill = "BLUE",width = 5)
     draw.line([(127,127),(0,127)], fill = "BLUE",width = 5)
     draw.line([(0,127),(0,0)], fill = "BLUE",width = 5)
-    print "***draw rectangle"
+    print("***draw rectangle")
     draw.rectangle([(18,10),(110,20)],fill = "RED")
 
-    print "***draw text"
+    print("***draw text")
     draw.text((33, 22), 'WaveShare ', fill = "BLUE")
     draw.text((32, 36), 'Electronic ', fill = "BLUE")
     draw.text((28, 48), '1.44inch LCD ', fill = "BLUE")
@@ -394,5 +414,5 @@ if __name__ == '__main__':
     # image = Image.open('time.bmp')
     # LCD.showImage(image,0,0)
 
-    GPIO.cleanup()
+    LCD.GPIO_Cleanup()
 

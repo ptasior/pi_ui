@@ -335,7 +335,15 @@ class IR(object):
 
 
     def listen(self, handler):
+        self.initListen(handler)
+        while True:
+            self.poll()
+
+
+    def initListen(self, handler):
         global code, fetching_code, pi
+
+        self.handler = handler
 
         pi.set_mode(GPIO, pigpio.INPUT) # IR RX connected to this GPIO.
         pi.set_glitch_filter(GPIO, GLITCH) # Ignore glitches.
@@ -344,18 +352,25 @@ class IR(object):
         if VERBOSE:
             print("Listening")
 
-        while True:
-            code = []
-            fetching_code = True
-            while fetching_code:
-                time.sleep(0.1)
-            if VERBOSE:
-                print("Received: \n"+str(code))
+        code = []
+        fetching_code = True
 
-            key = self.translate(code)
-            handler(key)
 
-            time.sleep(0.5)
+    def poll(self):
+        global code, fetching_code, pi
+        if fetching_code:
+            return
+
+        if VERBOSE:
+            print("Received: \n"+str(code))
+
+        key = self.translate(code)
+        self.handler(key)
+
+        code = []
+        fetching_code = True
+
+        # time.sleep(0.5)
 
         # pi.set_glitch_filter(GPIO, 0) # Cancel glitch filter.
         # pi.set_watchdog(GPIO, 0) # Cancel watchdog.
