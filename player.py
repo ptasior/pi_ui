@@ -20,13 +20,16 @@ class Player(object):
         if not len(shared_data.data['playlist']):
             return
 
-        url = shared_data.data['playlist'].pop()
+        if 'url' not in shared_data.data['playlist'][0]:
+            return
 
-        self.playUrl(url)
+        track = shared_data.data['playlist'].pop()
+
+        self.playUrl(track['url'])
 
 
     def playUrl(self, url):
-        print('Player: PLaying '+url)
+        print('Player: Playing '+url)
         cmd = ['mplayer', '-quiet', '-cache' , '400', url]
         # self.proc_raw = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         self.proc_raw = subprocess.Popen(cmd)
