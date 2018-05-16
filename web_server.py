@@ -17,6 +17,10 @@ class WebServer(object):
         templates_path = os.path.join(base_path, 'templates')
         bottle.TEMPLATE_PATH.insert(0, templates_path)
 
+        self.runThread()
+
+
+    def runThread(self):
         self.thread = Thread(target = self.run)
         self.thread.setDaemon(True)
         self.thread.start()
@@ -39,7 +43,7 @@ class WebServer(object):
 
     @methodroute('/')
     def index(self):
-        return bottle.template('index')
+        bottle.redirect('/menu')
 
 
     @methodroute('/menu')

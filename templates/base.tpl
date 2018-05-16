@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Server</title>
+    <title>PI UI</title>
     <style>
     .treeSpan
     {

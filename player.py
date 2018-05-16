@@ -6,15 +6,15 @@ import shared_data
 
 class Player(object):
     def __init__(self):
-        # self.state = 'STOP'
-        self.state = 'NEXT'
+        # self.status = 'STOP'
+        self.status = 'NEXT'
         shared_data.data['playlist'] = []
         shared_data.addThread('player', self.loop)
         print("player initialised")
 
 
     def loop(self):
-        if self.state != 'NEXT':
+        if self.status != 'NEXT':
             return
 
         if not len(shared_data.data['playlist']):
@@ -23,7 +23,10 @@ class Player(object):
         if 'url' not in shared_data.data['playlist'][0]:
             return
 
-        track = shared_data.data['playlist'].pop()
+        track = shared_data.data['playlist'].pop(0)
+
+        if 'url' not in track or not track['url']: # Could not be filled
+            return
 
         self.playUrl(track['url'])
 

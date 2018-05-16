@@ -20,8 +20,10 @@ def execute():
     html_content = urllib.request.urlopen(url)
     simTracks = html_content.read().decode()
     simt = json.loads(simTracks)
-    print(str(simt))
+    # print(str(simt))
 
-    l = [i['artist']['name'] + ' - '+ i['name'] for i in simt['similartracks']['track']]
-    shared_data.data['playlist'].extend({'title':l})
+    tracks = [i['artist']['name'] + ' - '+ i['name'] for i in simt['similartracks']['track']]
+    shared_data.data['playlist'].extend([{'title': t} for t in tracks])
+
+    shared_data.objects['youtubeLinker'].runThread()
 

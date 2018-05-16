@@ -13,5 +13,8 @@ def execute():
     topTracks = html_content.read().decode()
     topt = json.loads(topTracks)
 
-    l = [i['artist']['name'] + ' - '+ i['name'] for i in topt['toptracks']['track']]
-    shared_data.data['playlist'].extend({'title':l})
+    tracks = [i['artist']['name'] + ' - '+ i['name'] for i in topt['toptracks']['track']]
+    shared_data.data['playlist'].extend([{'title': t} for t in tracks])
+
+    shared_data.objects['youtubeLinker'].runThread()
+
