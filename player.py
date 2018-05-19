@@ -14,6 +14,11 @@ class Player(object):
 
 
     def loop(self):
+        if hasattr(self, 'proc_raw') \
+                and self.proc_raw.poll() != None \
+                and self.status == 'PLAY':
+            self.status = 'NEXT'  # poll == None means proc is alive
+
         if self.status != 'NEXT':
             return
 
