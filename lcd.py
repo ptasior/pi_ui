@@ -1,6 +1,6 @@
 import traceback
 try:
-    import drivers.lcd
+    import drivers.ST7735
     isSupported = True
 except:
     print('Cannot load LCD driver. Missing RPiGPIO or patform not supported')
@@ -26,24 +26,15 @@ class MenuLcd(object):
         self.cursor = 0
         self.prevItems = 0
 
-        self.lcd = drivers.lcd.LCD()
-        self.lcd.init()
+        self.lcd = drivers.ST7735.ST7735()
+        self.lcd.begin()
 
         self.updateBranch()
 
-        self.drawList()
-        self.drawCursor()
+        self.draw()
 
         # self.lcd.clear()
 
-
-
-    def drawCursor(self):
-        image = Image.new("RGB", (128, 128), "BLACK")
-        draw = ImageDraw.Draw(image)
-        draw.rectangle([(2, self.cursor*14+4),(6,self.cursor*14+8)],fill = "WHITE")
-
-        self.lcd.drawRect(image, 0,0,10,128)
 
 
     def updateBranch(self):
@@ -53,11 +44,10 @@ class MenuLcd(object):
             self.currentBranch = self.currentBranch[p]
 
 
-    def drawList(self):
+    def draw(self):
         itemsCount = len(self.currentBranch.keys())
 
-        imgWidth = max(itemsCount, self.prevItems)*14
-        image = Image.new("RGB", (128, imgWidth), "BLACK")
+        image = Image.new("RGB", (129, 129), "BLACK")
         draw = ImageDraw.Draw(image)
 
         cnt = 0
@@ -66,18 +56,20 @@ class MenuLcd(object):
             draw.text((10, cnt*14), i, fill = color)
             cnt = cnt +1
 
+        draw.rectangle([(2, self.cursor*14+4),(6,self.cursor*14+8)],fill = "WHITE")
+
         self.prevItems = itemsCount
-        self.lcd.drawRect(image,0,0,128,imgWidth)
+        self.lcd.display(image)
 
 
     def up(self):
         self.cursor = (self.cursor - 1) % len(self.currentBranch)
-        self.drawCursor()
+        self.draw()
 
 
     def down(self):
         self.cursor = (self.cursor + 1) % len(self.currentBranch)
-        self.drawCursor()
+        self.draw()
 
 
     def go(self):
@@ -89,10 +81,9 @@ class MenuLcd(object):
         self.menuPos.append(it)
 
         self.updateBranch()
-        self.drawList()
 
         self.cursor = 0
-        self.drawCursor()
+        self.draw()
 
 
     def back(self):
@@ -102,8 +93,7 @@ class MenuLcd(object):
         self.menuPos.pop()
 
         self.updateBranch()
-        self.drawList()
 
         self.cursor = 0
-        self.drawCursor()
+        self.draw()
 

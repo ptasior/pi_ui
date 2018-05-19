@@ -382,10 +382,10 @@ class LCD:
 
 
 if __name__ == '__main__':
-    import Image
-    import ImageDraw
-    import ImageFont
-    import ImageColor
+    from PIL import Image
+    from PIL import ImageDraw
+    from PIL import ImageFont
+    from PIL import ImageColor
 
     LCD = LCD()
 
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     draw.text((32, 36), 'Electronic ', fill = "BLUE")
     draw.text((28, 48), '1.44inch LCD ', fill = "BLUE")
 
-    LCD.showImage(image,0,0)
+    LCD.showImage(image)
     LCD.driver_delay_ms(500)
 
     # image = Image.open('time.bmp')
